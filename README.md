@@ -1,3 +1,3 @@
 # ElasticLog
 
-A description of this package.
+Swift-Log backend implementation that sends logs to logstash.
