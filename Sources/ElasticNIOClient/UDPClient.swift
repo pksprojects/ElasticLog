@@ -57,8 +57,16 @@ public class UDPClient {
                     return channel.pipeline.addHandler(handler)
                 }
             }
-        return bootstrap.bind(host: host, port: listenPort)
-            .flatMap { _ in promise.futureResult }
+        bootstrap.bind(host: host, port: listenPort)
+            .whenComplete { result in
+                switch result {
+                case let .failure(error):
+                    promise.fail(error)
+                case .success:
+                    promise.succeed(Data())
+                }
+            }
+        return promise.futureResult
     }
 
     deinit {

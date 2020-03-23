@@ -43,7 +43,9 @@ public class LogstashTCPAppender: ElasticLogAppender {
 
     public func execute(_ data: Data) -> EventLoopFuture<Void> {
         return tcpClient.execute(data).map { data -> Void in
-            print(data)
+            if data.count > 0 {
+                debugPrint("Response from logstash: \(String(data: data, encoding: .utf8) ?? "")")
+            }
             return ()
         }
     }
@@ -83,7 +85,9 @@ public class LogstashUDPAppender: ElasticLogAppender {
 
     public func execute(_ data: Data) -> EventLoopFuture<Void> {
         return udpClient.execute(data).map { data -> Void in
-            print(data)
+            if data.count > 0 {
+                debugPrint("Response from logstash: \(String(data: data, encoding: .utf8) ?? "")")
+            }
             return ()
         }
     }

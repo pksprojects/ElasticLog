@@ -56,18 +56,15 @@ public class TCPClient {
                 }
             }
 
-        return bootstrap.connect(host: host, port: port)
-            .flatMap { _ in
-                promise.futureResult
+        bootstrap.connect(host: host, port: port).whenComplete { result in
+            switch result {
+            case let .failure(error):
+                promise.fail(error)
+            case .success:
+                promise.succeed(Data())
             }
-//            .map { buffer in
-//                var buf = buffer
-//                if let bytes = buf.readBytes(length: buf.readableBytes) {
-//                    return Data(bytes)
-//                } else {
-//                    return Data()
-//                }
-//        }
+        }
+        return promise.futureResult
     }
 
     deinit {
