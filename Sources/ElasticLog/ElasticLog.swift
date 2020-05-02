@@ -47,7 +47,7 @@ extension ElasticLogSystem {
         public var logEncoder: LogEntryEncoder
         public var logLevelOverrides: [String: Logger.Level]
 
-        public init(logLevel: Logger.Level, appenderSettings: [LogAppenderSettings], handlerFactories: [(String) -> LogHandler] = [], logEncoder: LogEntryEncoder = JsonLogEntryEncoder(), dateEncodingStrategy _: DateEncodingStrategy? = .iso8601, logLevelOverrides: [String: Logger.Level] = [:]) {
+        public init(logLevel: Logger.Level, appenderSettings: [LogAppenderSettings], handlerFactories: [(String) -> LogHandler] = [], logEncoder: LogEntryEncoder = JsonLogEntryEncoder(), logLevelOverrides: [String: Logger.Level] = [:]) {
             self.logLevel = logLevel
             self.appenderSettings = appenderSettings
             self.handlerFactories = handlerFactories
