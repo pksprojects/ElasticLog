@@ -17,14 +17,15 @@ public class UDPClient {
     let group: EventLoopGroup
     let host: String
     let port: Int
-    let listenPort: Int
+    let bindHost: String
+    let bindPort: Int
     let sslContext: NIOSSLContext?
     private let isSharedPool: Bool
     let socketAddress: SocketAddress
 
     let errorCallback: (Error?) -> Void = { _ in }
 
-    public init(_ host: String, port: Int, listenPort: Int, eventLoopProvider: EventLoopProvider = .createNew(threads: 1), sslContext: NIOSSLContext? = nil) throws {
+    public init(_ host: String, port: Int, bindHost: String, bindPort: Int, eventLoopProvider: EventLoopProvider = .createNew(threads: 1), sslContext: NIOSSLContext? = nil) throws {
         self.host = host
         self.port = port
         switch eventLoopProvider {
@@ -37,7 +38,8 @@ public class UDPClient {
         }
         self.sslContext = sslContext
         socketAddress = try SocketAddress.makeAddressResolvingHost(self.host, port: self.port)
-        self.listenPort = listenPort
+        self.bindHost = bindHost
+        self.bindPort = bindPort
     }
 
     public func execute(_ data: Data) -> EventLoopFuture<Data> {
@@ -57,7 +59,7 @@ public class UDPClient {
                     return channel.pipeline.addHandler(handler)
                 }
             }
-        bootstrap.bind(host: host, port: listenPort)
+        bootstrap.bind(host: bindHost, port: bindPort)
             .whenComplete { result in
                 switch result {
                 case let .failure(error):
@@ -97,7 +99,7 @@ private final class UDPChannelHandler: ChannelInboundHandler {
     public func channelActive(context: ChannelHandlerContext) {
         var buffer = context.channel.allocator.buffer(capacity: data.count)
         buffer.writeBytes(data)
-        let addBuffer = AddressedEnvelope<ByteBuffer>.init(remoteAddress: remoteAddress, data: buffer)
+        let addBuffer = AddressedEnvelope<ByteBuffer>(remoteAddress: remoteAddress, data: buffer)
         context.writeAndFlush(wrapOutboundOut(addBuffer), promise: nil)
     }
 

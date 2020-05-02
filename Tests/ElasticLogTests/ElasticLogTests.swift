@@ -33,8 +33,16 @@ final class ElasticLogTests: XCTestCase {
 
         let logger = Logger(label: #function)
 
-        measure {
-            logger.info("testMessage", metadata: nil)
+        let measureOptions = XCTMeasureOptions()
+        measureOptions.iterationCount = 1000
+        if #available(OSX 10.15, *) {
+            measure(options: measureOptions) {
+                logger.info("TCP test message", metadata: nil)
+            }
+        } else {
+            measure {
+                logger.info("TCP test message", metadata: nil)
+            }
         }
         sleep(1)
         e.fulfill()
@@ -46,14 +54,22 @@ final class ElasticLogTests: XCTestCase {
         let e = expectation(description: "execution complete")
 
         let settings = ElasticLogSystem.Settings(logLevel: .debug, appenderSettings: [
-            LogstashUDPAppender.Settings(host: "localhost", port: 9090, listenPort: 8080),
+            LogstashUDPAppender.Settings(host: "0.0.0.0", port: 9090),
         ])
         LoggingSystem.bootstrapInternal(try ElasticLogSystem.bootstrapFactory(with: settings))
 
         let logger = Logger(label: #function)
 
-        measure {
-            logger.info("testMessage", metadata: nil)
+        let measureOptions = XCTMeasureOptions()
+        measureOptions.iterationCount = 1000
+        if #available(OSX 10.15, *) {
+            measure(options: measureOptions) {
+                logger.info("UDP test message", metadata: nil)
+            }
+        } else {
+            measure {
+                logger.info("UDP test message", metadata: nil)
+            }
         }
         sleep(1)
         e.fulfill()

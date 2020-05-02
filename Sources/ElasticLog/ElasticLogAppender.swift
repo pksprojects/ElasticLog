@@ -66,8 +66,8 @@ extension LogstashTCPAppender {
 public class LogstashUDPAppender: ElasticLogAppender {
     public let udpClient: UDPClient
 
-    public init(_ host: String, port: Int, listenPort: Int, eventLoopProvider: EventLoopProvider = .createNew(threads: 1), sslContext: NIOSSLContext? = nil) throws {
-        udpClient = try UDPClient(host, port: port, listenPort: listenPort, eventLoopProvider: eventLoopProvider, sslContext: sslContext)
+    public init(_ host: String, port: Int, bindHost: String = "0.0.0.0", bindPort: Int = 0, eventLoopProvider: EventLoopProvider = .createNew(threads: 1), sslContext: NIOSSLContext? = nil) throws {
+        udpClient = try UDPClient(host, port: port, bindHost: bindHost, bindPort: bindPort, eventLoopProvider: eventLoopProvider, sslContext: sslContext)
     }
 
     public required convenience init(_ appenderSettings: LogAppenderSettings) throws {
@@ -80,7 +80,7 @@ public class LogstashUDPAppender: ElasticLogAppender {
         } else if let tlsConfig = settings.tlsConfig {
             sslContext = try NIOSSLContext(configuration: tlsConfig)
         }
-        try self.init(settings.host, port: settings.port, listenPort: settings.listenPort, eventLoopProvider: settings.eventLoopProvider, sslContext: sslContext)
+        try self.init(settings.host, port: settings.port, bindHost: settings.bindHost, bindPort: settings.bindPort, eventLoopProvider: settings.eventLoopProvider, sslContext: sslContext)
     }
 
     public func execute(_ data: Data) -> EventLoopFuture<Void> {
@@ -95,13 +95,25 @@ public class LogstashUDPAppender: ElasticLogAppender {
 
 extension LogstashUDPAppender {
     public struct Settings: LogAppenderSettings {
+        
         public let appender: ElasticLogAppender.Type = LogstashUDPAppender.self
 
         public let host: String
         public let port: Int
-        public let listenPort: Int
+        public let bindHost: String
+        public let bindPort: Int
         public var useSSL: Bool = false
         public var tlsConfig: TLSConfiguration?
-        public var eventLoopProvider: EventLoopProvider = .createNew(threads: 1)
+        public var eventLoopProvider: EventLoopProvider
+        
+        public init(host: String, port: Int, useSSL: Bool = false, tlsConfig: TLSConfiguration? = nil, bindHost: String = "0.0.0.0", bindPort: Int = 0,  eventLoopProvider: EventLoopProvider = .createNew(threads: 1)) {
+            self.host = host
+            self.port = port
+            self.bindHost = bindHost
+            self.bindPort = bindPort
+            self.useSSL = useSSL
+            self.tlsConfig = tlsConfig
+            self.eventLoopProvider = eventLoopProvider
+        }
     }
 }
